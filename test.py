@@ -2,7 +2,7 @@ from snowboy import snowboydecoder
 import speech_recognition as sr
 # import asyncio
 from AI import AI
-from TTS import TTS
+from TTS_BAIDU import TTS
 from MusicPlayer import MusicPlayer
 # import re
 import time
@@ -17,21 +17,26 @@ ai = AI(
     api_key=os.getenv("API_KEY"),
     model=os.getenv("MODEL")
 )
-
 tts = TTS(
-    appid=os.getenv("APPID"),
-    token=os.getenv("TOKEN"),
-    cluster=os.getenv("CLUSTER"),
-    voice_type=os.getenv("VOICE_TYPE"),
+    api_key=os.getenv("BAIDU_API_KEY"),
+    secret_key=os.getenv("BAIDU_SECRET_KEY")
 )
+# tts = TTS(
+#     appid=os.getenv("APPID"),
+#     token=os.getenv("TOKEN"),
+#     cluster=os.getenv("CLUSTER"),
+#     voice_type=os.getenv("VOICE_TYPE"),
+# )
 
 # text = ""
 # frist=False
 mic = sr.Microphone()
 recognizer = sr.Recognizer()
 # 回调函数，当检测到唤醒词时触发
-async def listen_and_transcribe():
+def listen_and_transcribe():
     """监听用户语音并转成文本"""
+    player = MusicPlayer('zai.mp3')
+    player.play()
     with mic as source:
         recognizer.adjust_for_ambient_noise(source)  # 调整噪音水平
         print("请开始说话...")
@@ -50,11 +55,12 @@ async def listen_and_transcribe():
 def ask(text):
     # global frist
     # frist=False
+    filename = 'reply.mp3'
     resText = ai.send(text)
-    tts.run(resText)
+    tts.run(resText, filename)
     # while frist == False:
     #     await asyncio.sleep(1)
-    player = MusicPlayer('reply.mp3')
+    player = MusicPlayer(filename)
     player.play()
     while True:
         time.sleep(1)
@@ -79,8 +85,7 @@ def main():
     # 初始化 Snowboy 检测器
     detector = snowboydecoder.HotwordDetector(MODEL_FILE, sensitivity=0.5)
     print("开始监听唤醒词...")
-    player = MusicPlayer('zai.mp3')
-    player.play()
+    
     # 开始监听
     detector.start(listen_and_transcribe, sleep_time=0.03)  # 设置检测间隔
     # 停止监听
@@ -88,4 +93,4 @@ def main():
 
 
 if __name__ == '__main__':
-    ask('你是谁')
+    main()

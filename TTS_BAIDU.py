@@ -16,9 +16,9 @@ def get_mac_address():
     return mac
 
 class TTS:
-    def __init__(self):
-        self.api_key="r1rr9VDYHgPfR9kfmyVCDkMl"
-        self.secret_key="RTvayuJvepDt63P5MvbOkbdUYWTZe3i6"
+    def __init__(self, api_key, secret_key):
+        self.api_key=api_key
+        self.secret_key=secret_key
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json"
@@ -31,10 +31,6 @@ class TTS:
         else:
             self.access_token = access_token
         
-        print(access_token, "============")
-
-        
-
     def run(self, text, filename):
         if text == "": return
         payload = urlencode({
@@ -50,33 +46,7 @@ class TTS:
         resp = requests.post("https://tsn.baidu.com/text2audio", data=payload.encode("utf-8"), headers={
             "Content-Type": "application/x-www-form-urlencoded"
         })
-        print(f"resp body: \n{resp.headers}")
+
         if "mp3" in resp.headers["Content-Type"]:
             file_to_save = open(filename, "wb")
             file_to_save.write(resp.content)
-
-            
-        # try:
-        #     f = urlopen(resp)
-        #     result_str = f.read()
-
-        #     headers = dict((name.lower(), value) for name, value in f.headers.items())
-
-        #     has_error = ("content-type" not in headers.keys() or headers["content-type"].find("audio/") < 0)
-        # except  URLError as err:
-        #     print("asr http response http code : " + str(err.code))
-        #     result_str = err.read()
-        #     has_error = True
-
-        # save_file = "error.txt" if has_error else "result.mp3"
-        # with open(save_file, "wb") as of:
-        #     of.write(result_str)
-
-        # if has_error:
-        #     result_str = str(result_str, "utf-8")
-        #     print("tts api  error:" + result_str)
-
-        # print("result saved as :" + save_file)
-
-        # file.close()
-        # print(self.ws.send, text)
