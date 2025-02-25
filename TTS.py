@@ -40,7 +40,7 @@ class TTS:
             }
         }}
         try:
-            resp = requests.post("https://openspeech.bytedance.com/api/v1/tts", json.dumps(merged_body), headers=self.header)
+            resp = requests.post("https://tsn.baidu.com/text2audio", json.dumps(merged_body), headers=self.header)
             # print(f"resp body: \n{resp.json()}")
             if "data" in resp.json():
                 data = resp.json()["data"]
