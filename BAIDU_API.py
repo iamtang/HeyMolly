@@ -9,8 +9,7 @@ from urllib.parse import urlencode
 cache = Cache("./.cache")
 
 def get_mac_address():
-    mac = ":".join(["{:02x}".format((uuid.getnode() >> elements) & 0xff)
-                    for elements in [40, 32, 24, 16, 8, 0]])
+    mac = ":".join(["{:02x}".format((uuid.getnode() >> elements) & 0xff) for elements in [40, 32, 24, 16, 8, 0]])
     return mac
 
 def get_file_content_as_base64(path, urlencoded=False):

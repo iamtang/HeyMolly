@@ -123,4 +123,4 @@ def main():
 
 if __name__ == '__main__':
     # api.asr("output.pcm")
-    listen_and_transcribe()
+    main()
