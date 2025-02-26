@@ -40,16 +40,17 @@ def rmFile(file_path):
         print(f"{file_path} 不存在")
 # 回调函数，当检测到唤醒词时触发
 def listen_and_transcribe():
+    ai.delete_chat_history()
     """监听用户语音并转成文本"""
     player = MusicPlayer('assets/zai.mp3')
     player.play()
     with mic as source:
         path = 'audio/chat.pcm'
-        recognizer.adjust_for_ambient_noise(source, duration=1)  # 调整噪音水平
+        recognizer.adjust_for_ambient_noise(source)  # 调整噪音水平
         while 1:
             print("请说话...")
             try:
-                audio_data = recognizer.listen(source, timeout=3)  # 监听语音
+                audio_data = recognizer.listen(source, timeout=5)  # 监听语音
                 wav_data = audio_data.get_wav_data()  # 获取 WAV 格式的二进制数据
                 
                 # 去除 WAV 头部，只保留 PCM 数据
@@ -94,7 +95,6 @@ def ask(text):
             print('====finished==')
             break
     # 清空记录
-    ai.delete_chat_history()
     rmFile(filename)
 
 
