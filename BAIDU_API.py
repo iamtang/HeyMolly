@@ -1,11 +1,9 @@
 
 import requests
-import json
 import uuid
+import base64
 from diskcache import Cache
 from urllib.parse import quote_plus
-from urllib.request import urlopen
-from urllib.error import URLError
 from urllib.parse import urlencode
 
 cache = Cache("./.cache")
@@ -15,23 +13,36 @@ def get_mac_address():
                     for elements in [40, 32, 24, 16, 8, 0]])
     return mac
 
-class TTS:
+def get_file_content_as_base64(path, urlencoded=False):
+    """
+    获取文件base64编码
+    :param path: 文件路径
+    :param urlencoded: 是否对结果进行urlencoded 
+    :return: base64编码信息
+    """
+    with open(path, "rb") as f:
+        content = base64.b64encode(f.read()).decode("utf8")
+        if urlencoded:
+            content = quote_plus(content)
+    return content
+
+class API:
     def __init__(self, api_key, secret_key):
         self.api_key=api_key
         self.secret_key=secret_key
-        headers = {
+        self.headers = {
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
         access_token = cache.get("baidu_access_token")
         if access_token == None:
-            response = requests.request("POST", f"https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id={self.api_key}&client_secret={self.secret_key}", headers=headers, data="").json()
+            response = requests.request("POST", f"https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id={self.api_key}&client_secret={self.secret_key}", headers=self.headers, data="").json()
             cache.set("baidu_access_token", response["access_token"], expire=response["expires_in"])
             self.access_token = response["access_token"]
         else:
             self.access_token = access_token
         
-    def run(self, text, filename):
+    def tts(self, text, filename):
         if text == "": return
         payload = urlencode({
             "tok": self.access_token, 
@@ -50,3 +61,19 @@ class TTS:
         if "mp3" in resp.headers["Content-Type"]:
             file_to_save = open(filename, "wb")
             file_to_save.write(resp.content)
+
+    def asr(self, file_path):
+        params = {
+            "dev_pid": 1537,
+            "cuid": get_mac_address(),
+            "token": self.access_token
+        }
+        with open(file_path, "rb") as audio_file:
+            response = requests.post("http://vop.baidu.com/server_api", params=params, headers={
+                "Content-Type": "audio/pcm;rate=16000"
+            }, data=audio_file).json()
+        try:
+            return response['result'][0]
+        except (KeyError, IndexError) as e:
+            print(f"获取结果失败: {e}")
+            return ''
