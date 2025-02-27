@@ -29,6 +29,7 @@ api = API(
 # )
 # text = ""
 # frist=False
+
 mic = sr.Microphone()
 recognizer = sr.Recognizer()
 recognizer.pause_threshold = 1.0
