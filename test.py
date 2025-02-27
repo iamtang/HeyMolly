@@ -27,12 +27,11 @@ api = API(
 #     cluster=os.getenv("CLUSTER"),
 #     voice_type=os.getenv("VOICE_TYPE"),
 # )
-
 # text = ""
 # frist=False
 mic = sr.Microphone()
 recognizer = sr.Recognizer()
-
+recognizer.pause_threshold = 1.0
 def rmFile(file_path):
     if os.path.exists(file_path):
         os.remove(file_path)
@@ -45,28 +44,31 @@ def listen_and_transcribe():
     player = MusicPlayer('assets/zai.mp3')
     player.play()
     with mic as source:
-        path = 'audio/chat.pcm'
-        recognizer.adjust_for_ambient_noise(source)  # 调整噪音水平
         while 1:
+            path = 'audio/chat.pcm'
+            recognizer.adjust_for_ambient_noise(source, duration=1)  # 调整噪音水平
+            recognizer.energy_threshold *= 1.5
             print("请说话...")
             try:
-                audio_data = recognizer.listen(source, timeout=5)  # 监听语音
+                start_time = time.time()
+                audio_data = recognizer.listen(source, timeout=3)  # 监听语音
+                end_time = time.time()
+                print(end_time - start_time)
                 wav_data = audio_data.get_wav_data()  # 获取 WAV 格式的二进制数据
                 
                 # 去除 WAV 头部，只保留 PCM 数据
                 pcm_data = wav_data[44:]  # 前 44 字节是 WAV 头部，去掉它
-                print(pcm_data)
                 # 将 PCM 数据保存到文件
                 with open(path, "wb") as f:
                     f.write(pcm_data)
 
                 print("音频已保存为 " + path)
                 text = api.asr(path)
-                rmFile(path)
+                # rmFile(path)
                 print(f"用户说: {text}")
                 if text == '':
                     break
-                
+                break
                 ask(text)
             except sr.WaitTimeoutError:
                 print("未检测到语音输入")
@@ -123,4 +125,4 @@ def main():
 
 if __name__ == '__main__':
     # api.asr("output.pcm")
-    main()
+    listen_and_transcribe()
