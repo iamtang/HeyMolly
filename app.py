@@ -1,10 +1,8 @@
 from snowboy import snowboydecoder
 import speech_recognition as sr
-# import asyncio
 from AI import AI
 from BAIDU_API import API
 from MusicPlayer import MusicPlayer
-# import re
 import time
 import os
 from dotenv import load_dotenv
@@ -27,9 +25,6 @@ api = API(
 #     cluster=os.getenv("CLUSTER"),
 #     voice_type=os.getenv("VOICE_TYPE"),
 # )
-# text = ""
-# frist=False
-
 mic = sr.Microphone()
 recognizer = sr.Recognizer()
 recognizer.pause_threshold = 1.0
@@ -51,12 +46,8 @@ def listen_and_transcribe():
             recognizer.energy_threshold *= 1.5
             print("请说话...")
             try:
-                start_time = time.time()
                 audio_data = recognizer.listen(source, timeout=3)  # 监听语音
-                end_time = time.time()
-                print(end_time - start_time)
                 wav_data = audio_data.get_wav_data()  # 获取 WAV 格式的二进制数据
-                
                 # 去除 WAV 头部，只保留 PCM 数据
                 pcm_data = wav_data[44:]  # 前 44 字节是 WAV 头部，去掉它
                 # 将 PCM 数据保存到文件
@@ -65,11 +56,10 @@ def listen_and_transcribe():
 
                 print("音频已保存为 " + path)
                 text = api.asr(path)
-                # rmFile(path)
+                rmFile(path)
                 print(f"用户说: {text}")
                 if text == '':
                     break
-                break
                 ask(text)
             except sr.WaitTimeoutError:
                 print("未检测到语音输入")
@@ -82,8 +72,6 @@ def listen_and_transcribe():
                 break
 
 def ask(text):
-    # global frist
-    # frist=False
     filename = 'audio/reply.mp3'
     resText = ai.send(text)
     print(f"AI说: {resText}")
@@ -101,19 +89,6 @@ def ask(text):
     rmFile(filename)
 
 
-# def callback(t, file, isEnd):
-#     global text, frist
-#     text += t or ""
-#     if('。' in text):
-#         match = re.search(r'([^。]+[。])(.*)', text)
-#         if(match != None):
-#             tts.run(match.group(1), file)
-#             frist = True
-#             text = match.group(2)
-#     elif isEnd:
-#         tts.run(text, file)
-#         frist = True
-
 def main():
     # 初始化 Snowboy 检测器
     detector = snowboydecoder.HotwordDetector(MODEL_FILE, sensitivity=0.5)
@@ -123,7 +98,5 @@ def main():
     # 停止监听
     detector.terminate()
 
-
 if __name__ == '__main__':
-    # api.asr("output.pcm")
-    listen_and_transcribe()
+    main()
