@@ -63,7 +63,7 @@ class API:
 
     def asr(self, file_path):
         params = {
-            "dev_pid": 1537,
+            "dev_pid": 1537, #1537 普通话(纯中文识别) 1737 英语 1637 粤语 1837 四川话
             "cuid": get_mac_address(),
             "token": self.access_token
         }
