@@ -26,9 +26,11 @@ def get_file_content_as_base64(path, urlencoded=False):
     return content
 
 class API:
-    def __init__(self, api_key, secret_key):
+    def __init__(self, api_key, secret_key, ars_dev_pid=1537, tts_per=0):
         self.api_key=api_key
         self.secret_key=secret_key
+        self.ars_dev_pid=ars_dev_pid
+        self.tts_per=tts_per
         self.headers = {
             "Content-Type": "application/json",
             "Accept": "application/json"
@@ -46,7 +48,7 @@ class API:
         payload = urlencode({
             "tok": self.access_token, 
             "tex": quote_plus(text), 
-            "per": 0, # 度小宇=1，度小美=0，度逍遥（基础）=3，度丫丫=4
+            "per": self.tts_per, # 度小宇=1，度小美=0，度逍遥（基础）=3，度丫丫=4
             "vol": 5, # 音量
             "aue": 3, # 3为mp3格式(默认)； 4为pcm-16k；5为pcm-8k；6为wav（内容同pcm-16k）; 注意aue=4或者6是语音识别要求的格式，但是音频内容不是语音识别要求的自然人发音，所以识别效果会受影响。
             "cuid": get_mac_address(),
@@ -63,7 +65,7 @@ class API:
 
     def asr(self, file_path):
         params = {
-            "dev_pid": 1537, #1537 普通话(纯中文识别) 1737 英语 1637 粤语 1837 四川话
+            "dev_pid": self.ars_dev_pid, #1537 普通话(纯中文识别) 1737 英语 1637 粤语 1837 四川话
             "cuid": get_mac_address(),
             "token": self.access_token
         }

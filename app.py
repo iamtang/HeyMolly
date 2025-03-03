@@ -7,27 +7,28 @@ import time
 import os
 from dotenv import load_dotenv
 
-MODEL_FILE = "assets/heymolly.pmdl"  # 替换为你的模型文件
 load_dotenv()
 
 ai = AI(
     base_url=os.getenv("BASE_URL"),
     api_key=os.getenv("API_KEY"),
-    model=os.getenv("MODEL")
+    model=os.getenv("MODEL"),
+    ai_name=os.getenv("AI_NAME"),
+    ai_profile=os.getenv("AI_PROFILE"),
+    your_name=os.getenv("YOUR_NAME"),
+    your_profile=os.getenv("YOUR_PROFILE"),
 )
 api = API(
     api_key=os.getenv("BAIDU_API_KEY"),
-    secret_key=os.getenv("BAIDU_SECRET_KEY")
+    secret_key=os.getenv("BAIDU_SECRET_KEY"),
+    ars_dev_pid=os.getenv("BAIDU_ARS_DEV_PID"),
+    tts_per=os.getenv("BAIDU_TTS_PER"),
 )
-# tts = TTS(
-#     appid=os.getenv("APPID"),
-#     token=os.getenv("TOKEN"),
-#     cluster=os.getenv("CLUSTER"),
-#     voice_type=os.getenv("VOICE_TYPE"),
-# )
+
 mic = sr.Microphone()
 recognizer = sr.Recognizer()
 recognizer.pause_threshold = 1.0
+CONTINUOUS_DIALOGUE=os.getenv("CONTINUOUS_DIALOGUE")
 def rmFile(file_path):
     if os.path.exists(file_path):
         os.remove(file_path)
@@ -37,7 +38,7 @@ def rmFile(file_path):
 def listen_and_transcribe():
     ai.delete_chat_history()
     """监听用户语音并转成文本"""
-    player = MusicPlayer('assets/zai.mp3')
+    player = MusicPlayer(os.getenv("WAKEUP_REPLY"))
     player.play()
     with mic as source:
         while 1:
@@ -70,14 +71,14 @@ def listen_and_transcribe():
             except sr.RequestError:
                 print("语音识别请求失败")
                 break
+            if CONTINUOUS_DIALOGUE != "True":
+                break
 
 def ask(text):
     filename = 'audio/reply.mp3'
     resText = ai.send(text)
     print(f"AI说: {resText}")
     api.tts(resText, filename)
-    # while frist == False:
-    #     await asyncio.sleep(1)
     player = MusicPlayer(filename)
     player.play()
     while True:
@@ -91,7 +92,7 @@ def ask(text):
 
 def main():
     # 初始化 Snowboy 检测器
-    detector = snowboydecoder.HotwordDetector(MODEL_FILE, sensitivity=0.5)
+    detector = snowboydecoder.HotwordDetector(os.getenv("WAKEUP_MODEL"), sensitivity=0.5)
     print("开始监听唤醒词...")
     # 开始监听
     detector.start(listen_and_transcribe, sleep_time=0.03)  # 设置检测间隔
@@ -99,4 +100,4 @@ def main():
     detector.terminate()
 
 if __name__ == '__main__':
-    main()
+    listen_and_transcribe()
